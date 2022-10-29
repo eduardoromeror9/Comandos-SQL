@@ -42,7 +42,7 @@ INSERT INTO `servicios` (`nombre`, `precio`) VALUES
 
 
 INSERT INTO reservaciones (nombre, apellido, hora, fecha, servicios) VALUES
-  ('Juan', 'De la torre', '10:30:00', '2021-06-28', 'Corte de Cabello Adulto, Corte de Barba' ),
+  ('Eduardo', 'Romero', '10:30:00', '2021-06-28', 'Corte de Cabello Adulto, Corte de Barba' ),
   ('Antonio', 'Hernandez', '14:00:00', '2021-07-30', 'Corte de Cabello Niño'),
   ('Pedro', 'Juarez', '20:00:00', '2021-06-25', 'Corte de Cabello Adulto'),
   ('Mireya', 'Perez', '19:00:00', '2021-06-25', 'Peinado Mujer'),
@@ -196,7 +196,9 @@ create table if not exists `clientes` (
 );
 
 insert into `clientes` (`nombre`, `apellido`, `telefono`, `email`) values
-('Ana', 'Preciado', '123456789', 'ana@ana.com');
+('Ana', 'Preciado', '123456789', 'ana@ana.com'),
+('Juan', 'Perez', '987654321', 'juan@juan.com'),
+('Pedro', 'Gomez', '123456789', 'pedro@pedro.com');
 
 create table if not exists `citas` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -210,3 +212,36 @@ create table if not exists `citas` (
 
 insert into `citas` (`fecha`, `hora`, `clienteId`) values
 ('2022-06-28', '10:30:00', 1);
+
+-- Unir 2 tablas
+select * from `citas` inner join `clientes` on `clientes`.`id` = `citas`.`clienteId`;
+
+-- Crear una tabla compuesta (pivot)
+create table if not exists `citasServicios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `citaId` int(11) NOT NULL,
+  `servicioId` int(11) NOT NULL,  
+  primary key (`id`),
+  key `citaId` (`citaId`),
+  constraint `citas_fk` foreign key (`citaId`) references `citas` (`id`),
+  key `servicioId` (`servicioId`),
+  constraint `servicios_fk` foreign key (`servicioId`) references `servicios` (`id`)
+);
+
+-- Insertar datos en una tabla compuesta (pivot)
+insert into `citasServicios` (`citaId`, `servicioId`) values
+(2, 8);
+
+
+-- Seleccionar datos de una tabla compuesta (pivot) con JOIN (INNER JOIN)
+select * from `citasServicios` inner join `citas` on `citas`.`id` = `citasServicios`.`citaId` inner join `clientes` on `clientes`.`id` = `citas`.`clienteId` inner join `servicios` on `servicios`.`id` = `citasServicios`.`servicioId`;
+
+
+select * from `citasServicios` left join `citas` on `citas`.`id` = `citasServicios`.`citaId` left join `servicios` on `servicios`.`id` = `citasServicios`.`servicioId`;
+
+insert into `citasServicios` (`citaId`, `servicioId`) values
+(2, 3),
+(2, 4);
+
+-- Multiples joins
+select * from `citasServicios` left join `citas` on `citas`.`id` = `citasServicios`.`citaId` left join `clientes` on `clientes`.`id` = `citas`.`clienteId` left join `servicios` on `servicios`.`id` = `citasServicios`.`servicioId` where `citas`.`fecha` = '2022-06-28';
